@@ -1,5 +1,5 @@
 import cPickle as pickle
-import hashlib,os
+import hashlib,os,sys
 from __builtin__ import file
 class UserInfoStorage:
     __userInfo={} #key:email value:UserInfo
@@ -13,6 +13,7 @@ class UserInfoStorage:
         self.addUser(u)
     
     def __del__(self):
+        del self.__userInfo["example@example.com"]
         pickle.dump(self.__userInfo, self.__f, protocol=1)
     
     def addUser(self,u):
@@ -32,7 +33,7 @@ class UserInfo:
     clientToken=""
     accessToken=""
     email=""
-    passwordHash=None
+    passwordHash=""
     availableProfiles=[{'id':0,'name':None}] #currently only one profile per account
     def checkToken(self,clientToken,accessToken):
         return clientToken == self.clientToken and accessToken == self.accessToken
@@ -45,14 +46,14 @@ class UserInfo:
         self.email=email
     
     def setPassword(self,password):
-        self.passwordHash=hashlib.sha512(password)
+        self.passwordHash=hashlib.sha512(password).hexdigest()
     
     def verifyPassword(self,password):
-        return hashlib.sha512(password)==self.passwordHash
+        return hashlib.sha512(password).hexdigest()==self.passwordHash
     
     def changePassword(self,passwordOld,passwordNew):
-        if hashlib.sha512(passwordOld)==self.passwordHash:
-            self.passwordHash=hashlib.sha512(passwordNew)
+        if hashlib.sha512(passwordOld).hexdigest()==self.passwordHash:
+            self.setPassword(passwordNew)
         else:
             raise ValueError('Password Incorrect')
     
